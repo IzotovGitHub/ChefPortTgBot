@@ -17,6 +17,7 @@
 
     <modules>
         <module>Dispatcher</module>
+        <module>Common-rabbit-mq</module>
     </modules>
 
     <properties>
@@ -24,6 +25,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <logger.version>1.2.17</logger.version>
+        <telegram.version>6.1.0</telegram.version>
     </properties>
 
     <dependencies>
