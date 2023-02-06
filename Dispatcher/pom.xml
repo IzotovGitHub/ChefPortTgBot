@@ -29,6 +29,12 @@
             <version>${telegram.version}</version>
         </dependency>
 
+        <!-- for RabbitMq -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- modules -->
         <dependency>
             <groupId>ru.izotov</groupId>

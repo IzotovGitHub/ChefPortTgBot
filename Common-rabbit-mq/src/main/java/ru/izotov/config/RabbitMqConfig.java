@@ -10,6 +10,17 @@ import org.springframework.stereotype.Component;
 @PropertySource("rabbitmq.properties")
 public class RabbitMqConfig {
 
+    // System
+    @Value("${host}")
+    private String host;
+    @Value("${port}")
+    private String port;
+    @Value("${username}")
+    private String userName;
+    @Value("${password}")
+    private String password;
+
+    // Queue
     @Value("${queue.doc.update}")
     private String docUpdateQueue;
     @Value("${queue.photo.update}")
