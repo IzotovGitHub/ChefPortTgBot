@@ -1,5 +1,6 @@
 package ru.izotov.service.impl;
 
+import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;

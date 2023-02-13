@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.izotov.config.RabbitMqConfig;
 
+import static ru.izotov.config.RabbitMqConfig.*;
+
 @Configuration
 public class RabbitConfiguration {
 
@@ -15,27 +17,27 @@ public class RabbitConfiguration {
     private RabbitMqConfig rabbitMqConfig;
 
     @Bean
-    public MessageConverter jsonMessageConverter(){
+    public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
-    public Queue textMessageQueue(){
-        return new Queue(rabbitMqConfig.getTextUpdateQueue());
+    public Queue textMessageQueue() {
+        return new Queue(TEXT_UPDATE_MESSAGE);
     }
 
     @Bean
-    public Queue docMessageQueue(){
-        return new Queue(rabbitMqConfig.getDocUpdateQueue());
+    public Queue docMessageQueue() {
+        return new Queue(DOC_UPDATE_MESSAGE);
     }
 
     @Bean
-    public Queue photoMessageQueue(){
-        return new Queue(rabbitMqConfig.getPhotoUpdateQueue());
+    public Queue photoMessageQueue() {
+        return new Queue(PHOTO_UPDATE_MESSAGE);
     }
 
     @Bean
-    public Queue answerMessageQueue(){
-        return new Queue(rabbitMqConfig.getAnswerMessageQueue());
+    public Queue answerMessageQueue() {
+        return new Queue(ANSWER_MESSAGE);
     }
 }

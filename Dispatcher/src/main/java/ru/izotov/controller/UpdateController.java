@@ -1,27 +1,26 @@
 package ru.izotov.controller;
 
+import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.izotov.config.RabbitMqConfig;
 import ru.izotov.service.UpdateProducer;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static ru.izotov.config.RabbitMqConfig.*;
 
 @Log4j
 @Component
 public class UpdateController {
 
-    private final RabbitMqConfig rabbitMqConfig;
     private final UpdateProducer updateProducer;
     private TelegramBot telegramBot;
 
-    public UpdateController(RabbitMqConfig rabbitMqConfig, UpdateProducer updateProducer) {
-        this.rabbitMqConfig = rabbitMqConfig;
+    public UpdateController(UpdateProducer updateProducer) {
         this.updateProducer = updateProducer;
     }
 
@@ -59,16 +58,16 @@ public class UpdateController {
     }
 
     private void processTextMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getTextUpdateQueue(), update);
+        updateProducer.produce(TEXT_UPDATE_MESSAGE, update);
     }
 
     private void processDocMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getDocUpdateQueue(), update);
+        updateProducer.produce(DOC_UPDATE_MESSAGE, update);
         sendMessage("Файл получен! Обрабатывается...", update);
     }
 
     private void processPhotoMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getPhotoUpdateQueue(), update);
+        updateProducer.produce(PHOTO_UPDATE_MESSAGE, update);
         sendMessage("Фото получено! Обрабатывается...", update);
     }
 
@@ -83,7 +82,7 @@ public class UpdateController {
         setView(sendMessage);
     }
 
-    private void setView(SendMessage sendMessage) {
+    public void setView(SendMessage sendMessage) {
         try {
             telegramBot.execute(sendMessage);
         } catch (TelegramApiException e) {
