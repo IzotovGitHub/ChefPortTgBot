@@ -1,6 +1,5 @@
 package ru.izotov.controller;
 
-import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -37,7 +36,7 @@ public class UpdateController {
             return;
         }
 
-        if (nonNull(update.getMessage())) {
+        if (update.hasMessage()) {
             distributeMessagesByType(update);
         } else {
             log.warn("Unsupported message is received: " + update);
