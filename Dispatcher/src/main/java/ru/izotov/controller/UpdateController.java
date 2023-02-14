@@ -6,22 +6,21 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.izotov.config.RabbitMqConfig;
 import ru.izotov.service.UpdateProducer;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import static ru.izotov.config.RabbitMqConfig.TEXT_UPDATE_MESSAGE;
 
 @Log4j
 @Component
 public class UpdateController {
 
-    private final RabbitMqConfig rabbitMqConfig;
+    private static final String UNSUPPORTED_MESSAGE = "Извините, но я еще не умею обрабатывать такие сообщения! =(";
+
     private final UpdateProducer updateProducer;
     private TelegramBot telegramBot;
 
-    public UpdateController(RabbitMqConfig rabbitMqConfig, UpdateProducer updateProducer) {
-        this.rabbitMqConfig = rabbitMqConfig;
+    public UpdateController(UpdateProducer updateProducer) {
         this.updateProducer = updateProducer;
     }
 
@@ -29,65 +28,53 @@ public class UpdateController {
         this.telegramBot = telegramBot;
     }
 
-    public void processUpdate(Update update) {
+    /**
+     * The method processes messages from the received update
+     *
+     * @param update This object represents an incoming update
+     */
+    public void processMessage(Update update) {
         if (isNull(update)) {
             log.error("Received update is null");
             return;
         } else if (isNull(telegramBot)) {
+            // TODO дмуаю, что лучше выбрасывать исключнение
             log.error("Bot is not initialized");
             return;
         }
 
-        if (nonNull(update.getMessage())) {
+        if (update.hasMessage()) {
             distributeMessagesByType(update);
         } else {
             log.warn("Unsupported message is received: " + update);
         }
     }
 
+    public void sendAnswerMessage(SendMessage message) {
+        try {
+            telegramBot.execute(message);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void distributeMessagesByType(Update update) {
         Message message = update.getMessage();
-        if (nonNull(message.getText())) {
-            processTextMessage(update);
-        } else if (nonNull(message.getDocument())) {
-            processDocMessage(update);
-        } else if (nonNull(message.getPhoto())) {
-            processPhotoMessage(update);
+        if (message.hasText()) {
+            updateProducer.produce(TEXT_UPDATE_MESSAGE, update);
         } else {
             setUnsupportedMessageTypeView(update);
         }
     }
 
-    private void processTextMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getTextUpdateQueue(), update);
-    }
-
-    private void processDocMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getDocUpdateQueue(), update);
-        sendMessage("Файл получен! Обрабатывается...", update);
-    }
-
-    private void processPhotoMessage(Update update) {
-        updateProducer.produce(rabbitMqConfig.getPhotoUpdateQueue(), update);
-        sendMessage("Фото получено! Обрабатывается...", update);
-    }
-
     private void setUnsupportedMessageTypeView(Update update) {
-        sendMessage("Неподдерживаемый тип сообжения!", update);
+        sendMessage(UNSUPPORTED_MESSAGE, update);
     }
 
     private void sendMessage(String message, Update update) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setText(message);
-        setView(sendMessage);
-    }
-
-    private void setView(SendMessage sendMessage) {
-        try {
-            telegramBot.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
+        sendAnswerMessage(sendMessage);
     }
 }
