@@ -9,11 +9,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.izotov.service.UpdateProducer;
 
 import static java.util.Objects.isNull;
-import static ru.izotov.config.RabbitMqConfig.*;
+import static ru.izotov.config.RabbitMqConfig.TEXT_UPDATE_MESSAGE;
 
 @Log4j
 @Component
 public class UpdateController {
+
+    private static final String UNSUPPORTED_MESSAGE = "Извините, но я еще не умею обрабатывать такие сообщения! =(";
 
     private final UpdateProducer updateProducer;
     private TelegramBot telegramBot;
@@ -48,9 +50,9 @@ public class UpdateController {
         }
     }
 
-    public void setView(SendMessage sendMessage) {
+    public void sendAnswerMessage(SendMessage message) {
         try {
-            telegramBot.execute(sendMessage);
+            telegramBot.execute(message);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
@@ -59,38 +61,20 @@ public class UpdateController {
     private void distributeMessagesByType(Update update) {
         Message message = update.getMessage();
         if (message.hasText()) {
-            processTextMessage(update);
-        } else if (message.hasDocument()) {
-            processDocMessage(update);
-        } else if (message.hasPhoto()) {
-            processPhotoMessage(update);
+            updateProducer.produce(TEXT_UPDATE_MESSAGE, update);
         } else {
             setUnsupportedMessageTypeView(update);
         }
     }
 
-    private void processTextMessage(Update update) {
-        updateProducer.produce(TEXT_UPDATE_MESSAGE, update);
-    }
-
-    private void processDocMessage(Update update) {
-        updateProducer.produce(DOC_UPDATE_MESSAGE, update);
-        sendMessage("Файл получен! Обрабатывается...", update);
-    }
-
-    private void processPhotoMessage(Update update) {
-        updateProducer.produce(PHOTO_UPDATE_MESSAGE, update);
-        sendMessage("Фото получено! Обрабатывается...", update);
-    }
-
     private void setUnsupportedMessageTypeView(Update update) {
-        sendMessage("Неподдерживаемый тип сообжения!", update);
+        sendMessage(UNSUPPORTED_MESSAGE, update);
     }
 
     private void sendMessage(String message, Update update) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setText(message);
-        setView(sendMessage);
+        sendAnswerMessage(sendMessage);
     }
 }
