@@ -29,7 +29,7 @@ class TelegramBotSpec extends Specification {
         when: "method is called"
             bot.onUpdateReceived(update)
         then: "update is processed"
-            1 * updateController.processUpdate(update)
+            1 * updateController.processMessage(update)
     }
 
     def "get bot name"() {

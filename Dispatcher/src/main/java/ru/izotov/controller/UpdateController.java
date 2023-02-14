@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.izotov.service.UpdateProducer;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static ru.izotov.config.RabbitMqConfig.*;
 
 @Log4j
@@ -27,11 +26,17 @@ public class UpdateController {
         this.telegramBot = telegramBot;
     }
 
-    public void processUpdate(Update update) {
+    /**
+     * The method processes messages from the received update
+     *
+     * @param update This object represents an incoming update
+     */
+    public void processMessage(Update update) {
         if (isNull(update)) {
             log.error("Received update is null");
             return;
         } else if (isNull(telegramBot)) {
+            // TODO дмуаю, что лучше выбрасывать исключнение
             log.error("Bot is not initialized");
             return;
         }
@@ -43,13 +48,21 @@ public class UpdateController {
         }
     }
 
+    public void setView(SendMessage sendMessage) {
+        try {
+            telegramBot.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void distributeMessagesByType(Update update) {
         Message message = update.getMessage();
-        if (nonNull(message.getText())) {
+        if (message.hasText()) {
             processTextMessage(update);
-        } else if (nonNull(message.getDocument())) {
+        } else if (message.hasDocument()) {
             processDocMessage(update);
-        } else if (nonNull(message.getPhoto())) {
+        } else if (message.hasPhoto()) {
             processPhotoMessage(update);
         } else {
             setUnsupportedMessageTypeView(update);
@@ -79,13 +92,5 @@ public class UpdateController {
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setText(message);
         setView(sendMessage);
-    }
-
-    public void setView(SendMessage sendMessage) {
-        try {
-            telegramBot.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
