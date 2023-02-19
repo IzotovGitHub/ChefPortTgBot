@@ -12,13 +12,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
+        <version>2.5.2</version>
     </parent>
 
     <modules>
         <module>Dispatcher</module>
         <module>Common-rabbit-mq</module>
         <module>node</module>
+        <module>Common-jpa</module>
     </modules>
 
     <properties>
@@ -30,6 +31,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots-spring-boot-starter</artifactId>
+            <version>${telegram.version}</version>
+        </dependency>
+
         <!-- Logger -->
         <dependency>
             <groupId>log4j</groupId>
@@ -64,5 +71,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
