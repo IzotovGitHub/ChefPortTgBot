@@ -49,32 +49,4 @@ public class UpdateController {
             log.warn("Unsupported message is received: " + update);
         }
     }
-
-    public void sendAnswerMessage(SendMessage message) {
-        try {
-            telegramBot.execute(message);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void distributeMessagesByType(Update update) {
-        Message message = update.getMessage();
-        if (message.hasText()) {
-            updateProducer.produce(TEXT_UPDATE_MESSAGE, update);
-        } else {
-            setUnsupportedMessageTypeView(update);
-        }
-    }
-
-    private void setUnsupportedMessageTypeView(Update update) {
-        sendMessage(UNSUPPORTED_MESSAGE, update);
-    }
-
-    private void sendMessage(String message, Update update) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(update.getMessage().getChatId().toString());
-        sendMessage.setText(message);
-        sendAnswerMessage(sendMessage);
-    }
 }

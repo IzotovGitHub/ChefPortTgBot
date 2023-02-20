@@ -1,17 +1,19 @@
 package ru.izotov.controller
 
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.izotov.bot.impl.TelegramBotImpl
+import ru.izotov.controller.impl.TextMessageControllerImpl
 import spock.lang.Specification
 
-class TelegramBotSpec extends Specification {
+class TelegramBotImplSpec extends Specification {
 
-    TelegramBot bot
+    TelegramBotImpl bot
 
-    UpdateController updateController
+    TextMessageControllerImpl updateController
 
     def setup() {
-        updateController = Mock(UpdateController)
-        bot = new TelegramBot(updateController)
+        updateController = Mock(TextMessageControllerImpl)
+        bot = new TelegramBotImpl(updateController, sendMessageService)
         bot.@botName = "bot_name"
         bot.@botToken = "bot_token"
     }
