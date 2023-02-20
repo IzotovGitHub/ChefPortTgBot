@@ -12,6 +12,8 @@ import ru.izotov.bot.TelegramBot;
 import ru.izotov.controller.TextMessageController;
 import ru.izotov.service.SendMessageService;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @Log4j
 @Component
 public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramBot {
@@ -34,6 +36,8 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
 
     @Override
     public void onUpdateReceived(Update update) {
+        checkArgument(update.hasMessage(), "Received update has not a message");
+
         Message message = update.getMessage();
         if (message.hasText()) {
             textMessageController.process(update);
