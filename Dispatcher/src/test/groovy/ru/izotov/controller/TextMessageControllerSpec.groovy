@@ -3,35 +3,35 @@ package ru.izotov.controller
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.izotov.bot.impl.TelegramBotImpl
+import ru.izotov.controller.impl.TextMessageControllerImpl
 import ru.izotov.service.UpdateProducer
 import spock.lang.Specification
 
-import static ru.izotov.controller.UpdateController.UNSUPPORTED_MESSAGE
+class TextMessageControllerSpec extends Specification {
 
-class UpdateControllerSpec extends Specification {
+    TextMessageControllerImpl textMessageController
 
-    UpdateController updateController
-
-    TelegramBot telegramBot
+    TelegramBotImpl telegramBot
     UpdateProducer updateProducer
 
     def setup() {
-        telegramBot = Mock(TelegramBot)
+        telegramBot = Mock(TelegramBotImpl)
         updateProducer = Mock(UpdateProducer)
 
-        updateController = new UpdateController(updateProducer)
+        textMessageController = new TextMessageControllerImpl(updateProducer)
     }
 
     def "register bot"() {
         when: "method is called"
-            updateController.registerBot(telegramBot)
+            textMessageController.registerBot(telegramBot)
         then: "the telegram bot is initialized"
-            updateController.@telegramBot == telegramBot
+            textMessageController.@telegramBot == telegramBot
     }
 
     def "message processing without update"() {
         when: "method is called"
-            updateController.processMessage(null)
+            textMessageController.processMessage(null)
         then: "nothing happened"
             0 * updateProducer._
             noExceptionThrown()
@@ -39,7 +39,7 @@ class UpdateControllerSpec extends Specification {
 
     def "message processing when bot is not initialized"() {
         when: "method is called"
-            updateController.processMessage(Mock(Update))
+            textMessageController.processMessage(Mock(Update))
         then: "nothing happened"
             0 * updateProducer._
             noExceptionThrown()
@@ -51,9 +51,9 @@ class UpdateControllerSpec extends Specification {
                 hasMessage() >> false
             }
         and: "bot is initialized"
-            updateController.registerBot(telegramBot)
+            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            updateController.processMessage(update)
+            textMessageController.processMessage(update)
         then: "nothing happened"
             0 * updateProducer._
             noExceptionThrown()
@@ -65,9 +65,9 @@ class UpdateControllerSpec extends Specification {
                 hasMessage() >> true
             }
         and: "bot is initialized"
-            updateController.registerBot(telegramBot)
+            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            updateController.processMessage(update)
+            textMessageController.processMessage(update)
         then: "get message from update"
             update.getMessage() >> Mock(Message) {
                 hasText() >> true
@@ -82,9 +82,9 @@ class UpdateControllerSpec extends Specification {
                 hasMessage() >> true
             }
         and: "bot is initialized"
-            updateController.registerBot(telegramBot)
+            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            updateController.processMessage(update)
+            textMessageController.processMessage(update)
         then: "get message from update"
             update.getMessage() >> Mock(Message) {
                 hasText() >> false
@@ -101,9 +101,9 @@ class UpdateControllerSpec extends Specification {
         given: "send message"
             def message = Mock(SendMessage)
         and: "bot is initialized"
-            updateController.registerBot(telegramBot)
+            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            updateController.sendAnswerMessage(message)
+            textMessageController.sendAnswerMessage(message)
         then: "send message to bot"
             1 * telegramBot.execute(message)
     }
