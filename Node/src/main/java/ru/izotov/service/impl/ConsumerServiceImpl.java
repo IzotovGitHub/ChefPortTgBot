@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.izotov.dao.mapper.UserMapper;
@@ -14,6 +12,7 @@ import ru.izotov.dao.service.RawDataService;
 import ru.izotov.entity.AppUser;
 import ru.izotov.service.ConsumerService;
 import ru.izotov.service.ProducerService;
+import ru.izotov.service.SendMessageService;
 
 import static java.util.Objects.isNull;
 import static ru.izotov.config.RabbitMqConfig.TEXT_UPDATE_MESSAGE;
@@ -27,6 +26,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final AppUserService appUserService;
     private final ProducerService producerService;
     private final UserMapper userMapper;
+    private final SendMessageService sendMessageService;
 
     @Override
     @RabbitListener(queues = TEXT_UPDATE_MESSAGE)
@@ -37,10 +37,9 @@ public class ConsumerServiceImpl implements ConsumerService {
         if (isNull(appUser)) {
             appUser = appUserService.create(userMapper.toAppUser(telegramUser));
         }
-        Message message = update.getMessage();
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId().toString());
-        sendMessage.setText("Hello " + appUser.getFirstName());
-        producerService.produceAnswer(sendMessage);
+        producerService.produceAnswer(sendMessageService.getSendMessage(
+                "Hello " + appUser.getFirstName(),
+                update
+        ));
     }
 }
