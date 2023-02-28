@@ -1,9 +1,8 @@
 package ru.izotov.controller
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
-import ru.izotov.bot.impl.TelegramBotImpl
+import ru.izotov.config.RabbitMqConfig
 import ru.izotov.controller.impl.TextMessageControllerImpl
 import ru.izotov.service.UpdateProducer
 import spock.lang.Specification
@@ -12,37 +11,22 @@ class TextMessageControllerSpec extends Specification {
 
     TextMessageControllerImpl textMessageController
 
-    TelegramBotImpl telegramBot
     UpdateProducer updateProducer
+    RabbitMqConfig rabbitMqConfig
 
     def setup() {
-        telegramBot = Mock(TelegramBotImpl)
         updateProducer = Mock(UpdateProducer)
+        rabbitMqConfig = Mock(RabbitMqConfig)
 
-        textMessageController = new TextMessageControllerImpl(updateProducer)
-    }
-
-    def "register bot"() {
-        when: "method is called"
-            textMessageController.registerBot(telegramBot)
-        then: "the telegram bot is initialized"
-            textMessageController.@telegramBot == telegramBot
+        textMessageController = new TextMessageControllerImpl(updateProducer, rabbitMqConfig)
     }
 
     def "message processing without update"() {
         when: "method is called"
-            textMessageController.processMessage(null)
-        then: "nothing happened"
-            0 * updateProducer._
-            noExceptionThrown()
-    }
-
-    def "message processing when bot is not initialized"() {
-        when: "method is called"
-            textMessageController.processMessage(Mock(Update))
-        then: "nothing happened"
-            0 * updateProducer._
-            noExceptionThrown()
+            textMessageController.process(null)
+        then: "exception is thrown"
+            def e = thrown(NullPointerException)
+            e.getMessage() == "update is marked non-null but is null"
     }
 
     def "received update has no message"() {
@@ -50,13 +34,11 @@ class TextMessageControllerSpec extends Specification {
             def update = Mock(Update) {
                 hasMessage() >> false
             }
-        and: "bot is initialized"
-            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            textMessageController.processMessage(update)
-        then: "nothing happened"
-            0 * updateProducer._
-            noExceptionThrown()
+            textMessageController.process(update)
+        then: "exception id thrown"
+            def e = thrown(IllegalArgumentException)
+            e.getMessage() == "Received update has not a message"
     }
 
     def "received update has a text message"() {
@@ -64,47 +46,15 @@ class TextMessageControllerSpec extends Specification {
             def update = Mock(Update) {
                 hasMessage() >> true
             }
-        and: "bot is initialized"
-            textMessageController.registerBot(telegramBot)
         when: "method is called"
-            textMessageController.processMessage(update)
+            textMessageController.process(update)
         then: "get message from update"
             update.getMessage() >> Mock(Message) {
                 hasText() >> true
             }
+        and: "get queue key"
+            1 * rabbitMqConfig.getTextQueue() >> "text_message_update"
         and: "produce text message"
             1 * updateProducer.produce("text_message_update", update)
-    }
-
-    def "received update has a text message with unsupported type"() {
-        given: "update"
-            def update = Mock(Update) {
-                hasMessage() >> true
-            }
-        and: "bot is initialized"
-            textMessageController.registerBot(telegramBot)
-        when: "method is called"
-            textMessageController.processMessage(update)
-        then: "get message from update"
-            update.getMessage() >> Mock(Message) {
-                hasText() >> false
-                getChatId() >> 1L
-            }
-        and: "send answer"
-            1 * telegramBot.execute({ SendMessage message ->
-                message.getChatId() == "1"
-                message.getText() == UNSUPPORTED_MESSAGE
-            })
-    }
-
-    def "send answer message test"() {
-        given: "send message"
-            def message = Mock(SendMessage)
-        and: "bot is initialized"
-            textMessageController.registerBot(telegramBot)
-        when: "method is called"
-            textMessageController.sendAnswerMessage(message)
-        then: "send message to bot"
-            1 * telegramBot.execute(message)
     }
 }
