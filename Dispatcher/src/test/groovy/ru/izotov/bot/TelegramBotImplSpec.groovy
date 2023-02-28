@@ -1,6 +1,5 @@
 package ru.izotov.bot
 
-
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.izotov.bot.impl.TelegramBotImpl
@@ -18,35 +17,46 @@ class TelegramBotImplSpec extends Specification {
     def setup() {
         sendMessageService = Mock(SendMessageService)
         textMessageController = Mock(TextMessageControllerImpl)
-        bot = new TelegramBotImpl(textMessageController, sendMessageService)
+        bot = new TelegramBotImpl(sendMessageService)
         bot.@botName = "bot_name"
         bot.@botToken = "bot_token"
+        bot.@textControllerBeanName = "text_message_key"
     }
 
-    def "process update with unsupported message type"() {
-        given: "update object"
-            def update = Mock(Update) { it ->
-                it.hasMessage() >> false
+    def "process update without it"() {
+        when: "method is called"
+            bot.onUpdateReceived(null)
+        then: "exception is thrown"
+            def e = thrown(NullPointerException)
+            e.getMessage() == "update is marked non-null but is null"
+    }
+
+    def "process update without message"() {
+        given: "update"
+            def update = Mock(Update) {
+                hasMessage() >> false
             }
         when: "method is called"
             bot.onUpdateReceived(update)
-        then: "get message from update"
+        then: "exception is thrown"
             def e = thrown(IllegalArgumentException)
             e.getMessage() == "Received update has not a message"
     }
 
-    def "process update test"() {
-        given: "update object"
-            def update = Mock(Update) { it ->
-                it.hasMessage() >> true
+    def "received update has a text message"() {
+        given: "update"
+            def update = Mock(Update) {
+                hasMessage() >> true
             }
+        and: "messageControllerMap"
+            bot.@messageControllerMap = Map.of("text_message_key", textMessageController)
         when: "method is called"
             bot.onUpdateReceived(update)
         then: "get message from update"
-            1 * update.getMessage() >> Mock(Message) { it ->
-                it.hasText() >> true
+            update.getMessage() >> Mock(Message) {
+                hasText() >> true
             }
-        and: "update is processed"
+        and: "process text message"
             1 * textMessageController.process(update)
     }
 
