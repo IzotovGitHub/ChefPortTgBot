@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.izotov.config.RabbitMqConfig;
 
-import static ru.izotov.config.RabbitMqConfig.*;
-
 @Configuration
 public class RabbitConfiguration {
 
@@ -23,21 +21,11 @@ public class RabbitConfiguration {
 
     @Bean
     public Queue textMessageQueue() {
-        return new Queue(TEXT_UPDATE_MESSAGE);
-    }
-
-    @Bean
-    public Queue docMessageQueue() {
-        return new Queue(DOC_UPDATE_MESSAGE);
-    }
-
-    @Bean
-    public Queue photoMessageQueue() {
-        return new Queue(PHOTO_UPDATE_MESSAGE);
+        return new Queue(rabbitMqConfig.getTextQueue());
     }
 
     @Bean
     public Queue answerMessageQueue() {
-        return new Queue(ANSWER_MESSAGE);
+        return new Queue(rabbitMqConfig.getAnswerQueue());
     }
 }
