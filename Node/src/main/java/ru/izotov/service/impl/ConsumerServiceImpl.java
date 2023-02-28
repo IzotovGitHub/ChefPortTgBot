@@ -3,6 +3,7 @@ package ru.izotov.service.impl;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -15,11 +16,11 @@ import ru.izotov.service.ProducerService;
 import ru.izotov.service.SendMessageService;
 
 import static java.util.Objects.isNull;
-import static ru.izotov.config.RabbitMqConfig.TEXT_UPDATE_MESSAGE;
 
 @Log4j
 @Service
 @AllArgsConstructor
+@PropertySource("rabbitmq.properties")
 public class ConsumerServiceImpl implements ConsumerService {
 
     private final RawDataService rawDataService;
@@ -29,7 +30,7 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final SendMessageService sendMessageService;
 
     @Override
-    @RabbitListener(queues = TEXT_UPDATE_MESSAGE)
+    @RabbitListener(queues = "${queue.text.update}")
     public void consumeTextMessageUpdates(Update update) {
         rawDataService.saveRawData(update);
         User telegramUser = update.getMessage().getFrom();
