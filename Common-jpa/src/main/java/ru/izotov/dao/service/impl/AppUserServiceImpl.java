@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.izotov.dao.repository.AppUserRepository;
 import ru.izotov.dao.service.AppUserService;
 import ru.izotov.entity.AppUser;
+import ru.izotov.enums.UserStatus;
 
 import static java.lang.String.format;
 
@@ -33,6 +34,16 @@ public class AppUserServiceImpl implements AppUserService {
         } catch (Exception e) {
             log.error("Unexpected error when trying to create user", e);
             return null;
+        }
+    }
+
+    public void updateStatus(AppUser appUser, UserStatus status) {
+        try {
+            if (appUser.getStatus() != status) {
+                repository.updateStatusById(appUser.getId(), status);
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error when trying to update user status", e);
         }
     }
 }
