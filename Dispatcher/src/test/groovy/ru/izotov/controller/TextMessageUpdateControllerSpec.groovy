@@ -3,13 +3,13 @@ package ru.izotov.controller
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.izotov.config.RabbitMqConfig
-import ru.izotov.controller.impl.TextMessageControllerImpl
+import ru.izotov.controller.impl.TextMessageUpdateControllerImpl
 import ru.izotov.service.UpdateProducer
 import spock.lang.Specification
 
-class TextMessageControllerSpec extends Specification {
+class TextMessageUpdateControllerSpec extends Specification {
 
-    TextMessageControllerImpl textMessageController
+    TextMessageUpdateControllerImpl controller
 
     UpdateProducer updateProducer
     RabbitMqConfig rabbitMqConfig
@@ -18,12 +18,12 @@ class TextMessageControllerSpec extends Specification {
         updateProducer = Mock(UpdateProducer)
         rabbitMqConfig = Mock(RabbitMqConfig)
 
-        textMessageController = new TextMessageControllerImpl(updateProducer, rabbitMqConfig)
+        controller = new TextMessageUpdateControllerImpl(updateProducer, rabbitMqConfig)
     }
 
     def "message processing without update"() {
         when: "method is called"
-            textMessageController.process(null)
+            controller.process(null)
         then: "exception is thrown"
             def e = thrown(NullPointerException)
             e.getMessage() == "update is marked non-null but is null"
@@ -35,7 +35,7 @@ class TextMessageControllerSpec extends Specification {
                 hasMessage() >> false
             }
         when: "method is called"
-            textMessageController.process(update)
+            controller.process(update)
         then: "exception id thrown"
             def e = thrown(IllegalArgumentException)
             e.getMessage() == "Received update has not a message"
@@ -47,7 +47,7 @@ class TextMessageControllerSpec extends Specification {
                 hasMessage() >> true
             }
         when: "method is called"
-            textMessageController.process(update)
+            controller.process(update)
         then: "get message from update"
             update.getMessage() >> Mock(Message) {
                 hasText() >> true

@@ -25,4 +25,6 @@ public class RabbitMqConfig {
     private String textQueue;
     @Value("${queue.answer.message}")
     private String answerQueue;
+    @Value("${queue.auth.user}")
+    private String authUserQueue;
 }

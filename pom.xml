@@ -21,6 +21,7 @@
         <module>node</module>
         <module>Common-jpa</module>
         <module>Common-utils</module>
+        <module>Auth-Service</module>
     </modules>
 
     <properties>
