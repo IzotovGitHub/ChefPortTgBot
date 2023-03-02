@@ -3,19 +3,17 @@ package ru.izotov.bot.impl;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.izotov.bot.TelegramBot;
-import ru.izotov.controller.MessageController;
+import ru.izotov.controller.UpdateController;
 import ru.izotov.service.SendMessageService;
 
-import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -23,18 +21,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 @Component
 public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramBot {
 
-    private static final String UNSUPPORTED_MESSAGE = "Извините, но я еще не умею обрабатывать такие сообщения! =(";
     @Value("${bot.name}")
     private String botName;
     @Value("${bot.token}")
     private String botToken;
-    @Value("${text.controller}")
-    private String textControllerBeanName;
 
     private final SendMessageService sendMessageService;
     @Autowired
-    @Qualifier("getControllerMap")
-    private Map<String, MessageController> messageControllerMap;
+    private Set<UpdateController> updateControllers;
 
     public TelegramBotImpl(SendMessageService sendMessageService) {
         this.sendMessageService = sendMessageService;
@@ -43,12 +37,9 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
     @Override
     public void onUpdateReceived(@NonNull Update update) {
         checkArgument(update.hasMessage(), "Received update has not a message");
-        Message message = update.getMessage();
-        if (message.hasText()) {
-            messageControllerMap.get(textControllerBeanName).process(update);
-        } else {
-            setUnsupportedMessageTypeView(update);
-        }
+        updateControllers.stream()
+                .filter(controller -> controller.isNeedProcess(update))
+                .forEach(controller -> controller.process(update));
     }
 
     @Override
@@ -58,10 +49,6 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void setUnsupportedMessageTypeView(Update update) {
-        sendAnswerMessage(sendMessageService.getSendMessage(UNSUPPORTED_MESSAGE, update));
     }
 
     @Override
