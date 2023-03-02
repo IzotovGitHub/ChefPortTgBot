@@ -2,6 +2,8 @@ package ru.izotov.service.impl;
 
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -10,12 +12,13 @@ import ru.izotov.dao.mapper.UserMapper;
 import ru.izotov.dao.service.AppUserService;
 import ru.izotov.dao.service.RawDataService;
 import ru.izotov.entity.AppUser;
+import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.ConsumerService;
 import ru.izotov.service.ProducerService;
 import ru.izotov.service.SendMessageService;
 import ru.izotov.service.enums.Command;
 
-import java.util.Arrays;
+import java.util.Map;
 
 import static java.util.Objects.isNull;
 
@@ -29,8 +32,10 @@ public class ConsumerServiceImpl implements ConsumerService {
     private final ProducerService producerService;
     private final UserMapper userMapper;
     private final SendMessageService sendMessageService;
+    @Autowired
+    @Qualifier("getHandlerMap")
+    private Map<Command, CommandHandler> commandHandlerMap;
 
-    private String help;
 
     public ConsumerServiceImpl(RawDataService rawDataService, AppUserService appUserService, ProducerService producerService, UserMapper userMapper, SendMessageService sendMessageService) {
         this.rawDataService = rawDataService;
@@ -46,17 +51,10 @@ public class ConsumerServiceImpl implements ConsumerService {
         rawDataService.saveRawData(update);
         Command command = Command.fromValue(update.getMessage().getText());
         String message;
-        if (isNull(command)) {
+        if (isNull(command) || !commandHandlerMap.containsKey(command)) {
             message = "Неизвестная команда! Чтобы посмотреть список доступных команд введите /help";
         } else {
-            AppUser user = getAppUser(update);
-            switch (command) {
-                case START ->
-                        message = String.format("Приветствую, %s!\n\n - Для полноценного взаимодействия с ботом пройдте регистрацию /auth\n - Чтобы посмотреть список доступных команд введите /help", user.getFirstName());
-                case AUTH -> message = "Функционал в разработке =)";
-                case HELP -> message = help();
-                default -> message = "Неизвестная команда! Чтобы посмотреть список доступных команд введите /help";
-            }
+            message = commandHandlerMap.get(command).handle(getAppUser(update), update);
         }
         producerService.produceAnswer(sendMessageService.getSendMessage(message, update));
     }
@@ -68,18 +66,5 @@ public class ConsumerServiceImpl implements ConsumerService {
             appUser = appUserService.create(userMapper.toAppUser(telegramUser));
         }
         return appUser;
-    }
-
-    private String help() {
-        if (isNull(help)) {
-            StringBuilder builder = new StringBuilder("Список доступных команд:\n\n");
-            Arrays.stream(Command.values())
-                    .forEach(command -> builder.append(command.getCommand())
-                            .append(" - ")
-                            .append(command.getDescription())
-                            .append("\n"));
-            help = builder.toString();
-        }
-        return help;
     }
 }
