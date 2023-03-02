@@ -6,7 +6,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.izotov.config.RabbitMqConfig;
-import ru.izotov.entity.AppUser;
 import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.enums.Command;
 
@@ -21,7 +20,7 @@ public class AuthCommandHandler implements CommandHandler {
     private final RabbitTemplate rabbitTemplate;
 
     @Override
-    public String handle(AppUser user, Update update) {
+    public String handle(Update update) {
         try {
             return (String) rabbitTemplate.convertSendAndReceive(rabbitMqConfig.getAuthUserQueue(), update);
         } catch (Exception e) {

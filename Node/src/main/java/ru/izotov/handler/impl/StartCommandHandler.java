@@ -2,7 +2,7 @@ package ru.izotov.handler.impl;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.izotov.entity.AppUser;
+import org.telegram.telegrambots.meta.api.objects.User;
 import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.enums.Command;
 
@@ -11,7 +11,8 @@ import static ru.izotov.service.enums.Command.START;
 @Component
 public class StartCommandHandler implements CommandHandler {
     @Override
-    public String handle(AppUser user, Update update) {
+    public String handle(Update update) {
+        User user = update.getMessage().getFrom();
         String template = """
                 Приветствую, %s!
                  
