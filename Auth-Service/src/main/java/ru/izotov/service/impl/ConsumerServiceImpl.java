@@ -7,6 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import ru.izotov.configuration.AnswerConfiguration;
 import ru.izotov.dao.mapper.UserMapper;
 import ru.izotov.dao.service.AppUserService;
 import ru.izotov.entity.AppUser;
@@ -23,10 +24,10 @@ public class ConsumerServiceImpl implements ConsumerService {
 
     private final UserMapper userMapper;
     private final AppUserService appUserService;
+    private final AnswerConfiguration answerConfiguration;
 
     @Override
     @RabbitListener(queues = "${queue.auth.user}")
-
     public String consumeAuthUser(Update update) {
         User telegramUser = update.getMessage().getFrom();
         AppUser appUser = appUserService.findAppUserByTelegramId(telegramUser.getId());
@@ -36,14 +37,14 @@ public class ConsumerServiceImpl implements ConsumerService {
         }
 
         if (appUser.getIsActive()) {
-            return "Вы уже зарегистрированы в системе!";
+            return answerConfiguration.getAlreadyActiveAnswer();
         }
 
         if (isNull(appUser.getEmail())) {
             appUserService.updateStatus(appUser, UserStatus.WAITING_FOR_EMAIL);
-            return "Для продолжения регистрации, пожалуйста, введите вашу электронную почту:";
+            return answerConfiguration.getRequestEmailAnswer();
         }
 
-        return "Функционал в разработке =)";
+        return answerConfiguration.getDefaultAnswer();
     }
 }
