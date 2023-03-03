@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.izotov.dao.service.AppUserService;
 import ru.izotov.dao.service.RawDataService;
+import ru.izotov.entity.AppUser;
 import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.ConsumerService;
 import ru.izotov.service.ProducerService;
@@ -25,14 +27,16 @@ public class ConsumerServiceImpl implements ConsumerService {
 
     private final RawDataService rawDataService;
     private final ProducerService producerService;
+    private final AppUserService appUserService;
     private final SendMessageService sendMessageService;
     @Autowired
     @Qualifier("getHandlerMap")
     private Map<Command, CommandHandler> commandHandlerMap;
 
-    public ConsumerServiceImpl(RawDataService rawDataService, ProducerService producerService, SendMessageService sendMessageService) {
+    public ConsumerServiceImpl(RawDataService rawDataService, ProducerService producerService, AppUserService appUserService, SendMessageService sendMessageService) {
         this.rawDataService = rawDataService;
         this.producerService = producerService;
+        this.appUserService = appUserService;
         this.sendMessageService = sendMessageService;
     }
 
@@ -43,10 +47,31 @@ public class ConsumerServiceImpl implements ConsumerService {
         Command command = Command.fromValue(update.getMessage().getText());
         String message;
         if (isNull(command) || !commandHandlerMap.containsKey(command)) {
-            message = "Неизвестная команда! Чтобы посмотреть список доступных команд введите /help";
+            message = processTextMessage(update);
         } else {
             message = commandHandlerMap.get(command).handle(update);
         }
         producerService.produceAnswer(sendMessageService.getSendMessage(message, update));
+    }
+
+    private String processTextMessage(Update update) {
+        AppUser user = appUserService.findAppUserByTelegramId(update.getMessage().getFrom().getId());
+        if (isNull(user)) {
+            return """
+                    Вы не зарегистрированы в системе! 
+                    Для регистрации введите команду: /auth
+                    """;
+        }
+
+        String result;
+        switch (user.getStatus()) {
+            case WAITING_FOR_EMAIL -> result = setEmailAndSendVerifyCode(update);
+            default -> result = "Извините, я Вас не понял! Для просмотра доступных команд, пожалуйста, введите: /help";
+        }
+        return result;
+    }
+
+    private String setEmailAndSendVerifyCode(Update update) {
+        return "Функционал в разработке =)";
     }
 }
