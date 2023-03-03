@@ -1,7 +1,7 @@
-package ru.izotov.service;
+package ru.izotov.consumer;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 public interface AnswerConsumer {
-    void consume(SendMessage sendMessage);
+    void consumeTextAnswer(SendMessage sendMessage);
 }

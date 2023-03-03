@@ -15,6 +15,6 @@ public class ProducerServiceImpl implements ProducerService {
 
     @Override
     public void produceAnswer(SendMessage sendMessage) {
-        rabbitTemplate.convertAndSend(rabbitMqConfig.getAnswerQueue(), sendMessage);
+        rabbitTemplate.convertAndSend(rabbitMqConfig.getTextAnswerQueue(), sendMessage);
     }
 }

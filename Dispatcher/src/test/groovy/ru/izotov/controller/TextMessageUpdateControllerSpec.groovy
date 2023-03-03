@@ -1,24 +1,24 @@
 package ru.izotov.controller
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.izotov.config.RabbitMqConfig
 import ru.izotov.controller.impl.TextMessageUpdateControllerImpl
-import ru.izotov.service.UpdateProducer
 import spock.lang.Specification
 
 class TextMessageUpdateControllerSpec extends Specification {
 
     TextMessageUpdateControllerImpl controller
 
-    UpdateProducer updateProducer
     RabbitMqConfig rabbitMqConfig
+    RabbitTemplate rabbitTemplate
 
     def setup() {
-        updateProducer = Mock(UpdateProducer)
         rabbitMqConfig = Mock(RabbitMqConfig)
+        rabbitTemplate = Mock(RabbitTemplate)
 
-        controller = new TextMessageUpdateControllerImpl(updateProducer, rabbitMqConfig)
+        controller = new TextMessageUpdateControllerImpl(rabbitMqConfig, rabbitTemplate)
     }
 
     def "message processing without update"() {
@@ -55,6 +55,6 @@ class TextMessageUpdateControllerSpec extends Specification {
         and: "get queue key"
             1 * rabbitMqConfig.getTextQueue() >> "text_message_update"
         and: "produce text message"
-            1 * updateProducer.produce("text_message_update", update)
+            1 * rabbitTemplate.convertAndSend("text_message_update", update)
     }
 }

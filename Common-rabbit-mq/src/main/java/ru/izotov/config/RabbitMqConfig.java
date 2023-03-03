@@ -23,8 +23,8 @@ public class RabbitMqConfig {
     // Queue
     @Value("${queue.text.update}")
     private String textQueue;
-    @Value("${queue.answer.message}")
-    private String answerQueue;
+    @Value("${queue.text.answer}")
+    private String textAnswerQueue;
     @Value("${queue.auth.user}")
     private String authUserQueue;
 }

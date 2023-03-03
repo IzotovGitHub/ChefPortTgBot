@@ -2,6 +2,7 @@ package ru.izotov.dao.service;
 
 
 import ru.izotov.entity.AppUser;
+import ru.izotov.enums.UserStatus;
 
 public interface AppUserService {
 
@@ -22,4 +23,6 @@ public interface AppUserService {
      * @return The {@code AppUser} instance, or null if exception an occurred
      */
     AppUser create(AppUser appUser);
+
+    void updateStatus(AppUser appUser, UserStatus status);
 }

@@ -1,4 +1,4 @@
-package ru.izotov.service.enums;
+package ru.izotov.enums;
 
 import java.util.Arrays;
 

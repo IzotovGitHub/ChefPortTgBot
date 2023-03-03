@@ -1,23 +1,25 @@
 package ru.izotov.handler.impl;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.izotov.entity.AppUser;
+import org.telegram.telegrambots.meta.api.objects.User;
+import ru.izotov.configuration.AnswerConfiguration;
+import ru.izotov.enums.Command;
 import ru.izotov.handler.CommandHandler;
-import ru.izotov.service.enums.Command;
 
-import static ru.izotov.service.enums.Command.START;
+import static ru.izotov.enums.Command.START;
 
 @Component
+@AllArgsConstructor
 public class StartCommandHandler implements CommandHandler {
+
+    private final AnswerConfiguration answerConfiguration;
+
     @Override
-    public String handle(AppUser user, Update update) {
-        String template = """
-                Приветствую, %s!
-                 
-                 - Для полноценного взаимодействия с ботом пройдте регистрацию %s
-                 - Чтобы посмотреть список доступных команд введите %s
-                """;
+    public String handle(Update update) {
+        User user = update.getMessage().getFrom();
+        String template = answerConfiguration.getStartTemplate();
         return String.format(template, user.getFirstName(), Command.AUTH.getCommand(), Command.HELP.getCommand());
     }
 
