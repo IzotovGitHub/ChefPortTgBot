@@ -12,11 +12,17 @@ public class AnswerConfiguration {
 
     @Value("${developing}")
     private String defaultAnswer;
+    @Value("${node.start}")
+    private String startTemplate;
     @Value("${node.text.user.not.auth}")
     private String userNotAuthTemplate;
     @Value("${node.erroneous.action}")
     private String erroneousActionTemplate;
-    @Value("${node.start}")
-    private String startTemplate;
+    @Value("${node.mail.already.been.send}")
+    private String mailAlreadyBeenSend;
+    @Value("${node.invalid.email}")
+    private String invalidEmailTemplate;
+    @Value("${node.email.already.in.use}")
+    private String emailAlreadyInUseTemplate;
 
 }

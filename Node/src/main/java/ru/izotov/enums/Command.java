@@ -5,6 +5,7 @@ import java.util.Arrays;
 public enum Command {
     START("/start", "стартовая команда, для начала работы с ботом."),
     AUTH("/auth", "регистрация пользователя."),
+    CANCEL("/cancel", "отмена выполнения текущей команды."),
     HELP("/help", "просмотр списка доступных команд.");
 
     private final String command;

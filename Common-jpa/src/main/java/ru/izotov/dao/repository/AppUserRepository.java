@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.izotov.entity.AppUser;
 import ru.izotov.enums.UserStatus;
 
+import java.util.Optional;
+
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     @Modifying
@@ -15,5 +17,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     @Query("update AppUser a set a.status = :status where a.id = :id")
     void updateStatusById(@Param(value = "id") Long userId, @Param(value = "status") UserStatus status);
 
-    AppUser findByTgUserId(Long tgUserId);
+    Optional<AppUser> findByTgUserId(Long tgUserId);
+
+    Optional<AppUser> findByEmail(String email);
 }
