@@ -24,5 +24,7 @@ public interface AppUserService {
      */
     AppUser create(AppUser appUser);
 
+    boolean isEmailAlreadyInUse(String email);
+
     void updateStatus(AppUser appUser, UserStatus status);
 }

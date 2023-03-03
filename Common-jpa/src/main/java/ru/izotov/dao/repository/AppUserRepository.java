@@ -16,4 +16,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     void updateStatusById(@Param(value = "id") Long userId, @Param(value = "status") UserStatus status);
 
     AppUser findByTgUserId(Long tgUserId);
+
+    AppUser findByEmail(String email);
 }

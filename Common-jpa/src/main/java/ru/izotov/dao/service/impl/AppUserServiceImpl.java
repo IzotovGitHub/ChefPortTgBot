@@ -9,6 +9,7 @@ import ru.izotov.entity.AppUser;
 import ru.izotov.enums.UserStatus;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 @Log4j
 @Service
@@ -37,6 +38,17 @@ public class AppUserServiceImpl implements AppUserService {
         }
     }
 
+    @Override
+    public boolean isEmailAlreadyInUse(String email) {
+        try {
+            return nonNull(repository.findByEmail(email));
+        } catch (Exception e) {
+            log.error("Unexpected error when trying to update user status", e);
+            return true;
+        }
+    }
+
+    @Override
     public void updateStatus(AppUser appUser, UserStatus status) {
         try {
             if (appUser.getStatus() != status) {
