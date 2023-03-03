@@ -92,6 +92,10 @@ public class TextMessageUpdateConsumer implements UpdateConsumer {
             return String.format(answerConfiguration.getInvalidEmailTemplate(), CANCEL.getCommand());
         }
 
+        if (appUserService.isEmailAlreadyInUse(email)) {
+            log.warn(String.format("User with id '%d' entered an email '%s' that is already in use", appUser.getId(), email));
+            return String.format(answerConfiguration.getEmailAlreadyInUseTemplate(), CANCEL.getCommand());
+        }
 
         return answerConfiguration.getDefaultAnswer();
     }

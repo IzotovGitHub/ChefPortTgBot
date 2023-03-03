@@ -22,6 +22,7 @@ public class AnswerConfiguration {
     private String mailAlreadyBeenSend;
     @Value("${node.invalid.email}")
     private String invalidEmailTemplate;
-
+    @Value("${node.email.already.in.use}")
+    private String emailAlreadyInUseTemplate;
 
 }
