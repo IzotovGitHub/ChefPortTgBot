@@ -1,4 +1,4 @@
-package ru.izotov.controller.impl;
+package ru.izotov.consumer.impl;
 
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.izotov.config.RabbitMqConfig;
-import ru.izotov.controller.UpdateConsumer;
+import ru.izotov.consumer.UpdateConsumer;
 import ru.izotov.dao.service.AppUserService;
 import ru.izotov.dao.service.RawDataService;
 import ru.izotov.entity.AppUser;
