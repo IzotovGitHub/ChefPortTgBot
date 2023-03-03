@@ -36,7 +36,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         }
 
         if (appUser.getIsActive()) {
-            return "Вы уже зарегестрированы в системе!";
+            return "Вы уже зарегистрированы в системе!";
         }
 
         if (isNull(appUser.getEmail())) {
