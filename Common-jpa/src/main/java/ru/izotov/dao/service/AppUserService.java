@@ -4,6 +4,8 @@ package ru.izotov.dao.service;
 import ru.izotov.entity.AppUser;
 import ru.izotov.enums.UserStatus;
 
+import java.util.Optional;
+
 public interface AppUserService {
 
     /**
@@ -13,7 +15,7 @@ public interface AppUserService {
      * @param telegramUserId Telegram user ID
      * @return The {@code AppUser} instance, or null if it doesn't exist or exception an occurred
      */
-    AppUser findAppUserByTelegramId(Long telegramUserId);
+    Optional<AppUser> findAppUserByTelegramId(Long telegramUserId);
 
     /**
      * Method for saving a new user
@@ -23,6 +25,8 @@ public interface AppUserService {
      * @return The {@code AppUser} instance, or null if exception an occurred
      */
     AppUser create(AppUser appUser);
+
+    AppUser update(AppUser user);
 
     boolean isEmailAlreadyInUse(String email);
 

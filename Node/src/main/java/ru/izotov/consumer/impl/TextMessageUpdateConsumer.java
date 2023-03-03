@@ -16,12 +16,14 @@ import ru.izotov.dao.service.AppUserService;
 import ru.izotov.dao.service.RawDataService;
 import ru.izotov.entity.AppUser;
 import ru.izotov.enums.Command;
+import ru.izotov.enums.UserStatus;
 import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.SendMessageService;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -67,11 +69,13 @@ public class TextMessageUpdateConsumer implements UpdateConsumer {
     }
 
     private String processTextMessage(Update update) {
-        AppUser user = appUserService.findAppUserByTelegramId(update.getMessage().getFrom().getId());
-        if (isNull(user)) {
+        Optional<AppUser> userOptional = appUserService.findAppUserByTelegramId(update.getMessage().getFrom().getId());
+
+        if (userOptional.isEmpty()) {
             return String.format(answerConfiguration.getUserNotAuthTemplate(), AUTH.getCommand());
         }
 
+        AppUser user = userOptional.get();
         String result;
         switch (user.getStatus()) {
             case WAITING_FOR_EMAIL -> result = setEmailAndSendVerifyCode(user, update);
@@ -96,6 +100,11 @@ public class TextMessageUpdateConsumer implements UpdateConsumer {
             log.warn(String.format("User with id '%d' entered an email '%s' that is already in use", appUser.getId(), email));
             return String.format(answerConfiguration.getEmailAlreadyInUseTemplate(), CANCEL.getCommand());
         }
+
+        appUser.setEmail(email);
+        appUser.setStatus(UserStatus.AWAITING_CONFIRMATION);
+        appUserService.update(appUser);
+
 
         return answerConfiguration.getDefaultAnswer();
     }

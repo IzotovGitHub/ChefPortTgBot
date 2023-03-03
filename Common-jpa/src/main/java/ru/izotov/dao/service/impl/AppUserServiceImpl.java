@@ -8,8 +8,9 @@ import ru.izotov.dao.service.AppUserService;
 import ru.izotov.entity.AppUser;
 import ru.izotov.enums.UserStatus;
 
+import java.util.Optional;
+
 import static java.lang.String.format;
-import static java.util.Objects.nonNull;
 
 @Log4j
 @Service
@@ -19,12 +20,12 @@ public class AppUserServiceImpl implements AppUserService {
     private final AppUserRepository repository;
 
     @Override
-    public AppUser findAppUserByTelegramId(Long telegramUserId) {
+    public Optional<AppUser> findAppUserByTelegramId(Long telegramUserId) {
         try {
             return repository.findByTgUserId(telegramUserId);
         } catch (Exception e) {
             log.error(format("Unexpected error when trying to find user by telegram user id. Telegram user id: '%s'", telegramUserId), e);
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -34,16 +35,26 @@ public class AppUserServiceImpl implements AppUserService {
             return repository.save(appUser);
         } catch (Exception e) {
             log.error("Unexpected error when trying to create user", e);
-            return null;
+            return appUser;
+        }
+    }
+
+    @Override
+    public AppUser update(AppUser user) {
+        try {
+            return repository.save(user);
+        } catch (Exception e) {
+            log.error("Unexpected error when trying to create user", e);
+            return user;
         }
     }
 
     @Override
     public boolean isEmailAlreadyInUse(String email) {
         try {
-            return nonNull(repository.findByEmail(email));
+            return repository.findByEmail(email).isPresent();
         } catch (Exception e) {
-            log.error("Unexpected error when trying to update user status", e);
+            log.error("Unexpected error when trying to get user by email", e);
             return true;
         }
     }

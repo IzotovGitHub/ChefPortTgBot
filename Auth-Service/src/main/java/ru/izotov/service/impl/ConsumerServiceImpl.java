@@ -30,11 +30,8 @@ public class ConsumerServiceImpl implements ConsumerService {
     @RabbitListener(queues = "${queue.auth.user}")
     public String consumeAuthUser(Update update) {
         User telegramUser = update.getMessage().getFrom();
-        AppUser appUser = appUserService.findAppUserByTelegramId(telegramUser.getId());
-
-        if (isNull(appUser)) {
-            appUser = appUserService.create(userMapper.toAppUser(telegramUser));
-        }
+        AppUser appUser = appUserService.findAppUserByTelegramId(telegramUser.getId())
+                .orElse(appUserService.create(userMapper.toAppUser(telegramUser)));
 
         if (appUser.getIsActive()) {
             return answerConfiguration.getAlreadyActiveAnswer();
