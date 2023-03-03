@@ -19,11 +19,13 @@ import ru.izotov.enums.Command;
 import ru.izotov.handler.CommandHandler;
 import ru.izotov.service.SendMessageService;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.util.Map;
 
 import static java.util.Objects.isNull;
-import static ru.izotov.enums.Command.AUTH;
-import static ru.izotov.enums.Command.HELP;
+import static java.util.Objects.nonNull;
+import static ru.izotov.enums.Command.*;
 
 @Log4j
 @Service
@@ -72,13 +74,35 @@ public class TextMessageUpdateConsumer implements UpdateConsumer {
 
         String result;
         switch (user.getStatus()) {
-            case WAITING_FOR_EMAIL -> result = setEmailAndSendVerifyCode(update);
+            case WAITING_FOR_EMAIL -> result = setEmailAndSendVerifyCode(user, update);
             default -> result = String.format(answerConfiguration.getErroneousActionTemplate(), HELP.getCommand());
         }
         return result;
     }
 
-    private String setEmailAndSendVerifyCode(Update update) {
+    private String setEmailAndSendVerifyCode(AppUser appUser, Update update) {
+        if (nonNull(appUser.getEmail())) {
+            return answerConfiguration.getMailAlreadyBeenSend();
+        }
+
+        String email = update.getMessage().getText();
+
+        if (!isValidEmail(email)) {
+            log.warn(String.format("User with id '%d' entered an invalid email: %s", appUser.getId(), email));
+            return String.format(answerConfiguration.getInvalidEmailTemplate(), CANCEL.getCommand());
+        }
+
+
         return answerConfiguration.getDefaultAnswer();
+    }
+
+    private boolean isValidEmail(String email) {
+        try {
+            InternetAddress internetAddress = new InternetAddress(email);
+            internetAddress.validate();
+            return true;
+        } catch (AddressException e) {
+            return false;
+        }
     }
 }
