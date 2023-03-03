@@ -3,10 +3,10 @@ package ru.izotov.handler.impl;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import ru.izotov.enums.Command;
 import ru.izotov.handler.CommandHandler;
-import ru.izotov.service.enums.Command;
 
-import static ru.izotov.service.enums.Command.START;
+import static ru.izotov.enums.Command.START;
 
 @Component
 public class StartCommandHandler implements CommandHandler {

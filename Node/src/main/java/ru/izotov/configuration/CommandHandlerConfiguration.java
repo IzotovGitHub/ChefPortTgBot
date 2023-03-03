@@ -3,8 +3,8 @@ package ru.izotov.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.izotov.enums.Command;
 import ru.izotov.handler.CommandHandler;
-import ru.izotov.service.enums.Command;
 
 import java.util.Map;
 import java.util.Set;
