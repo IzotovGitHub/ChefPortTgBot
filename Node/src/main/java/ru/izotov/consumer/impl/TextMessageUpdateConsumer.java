@@ -1,11 +1,14 @@
 package ru.izotov.consumer.impl;
 
 import lombok.extern.log4j.Log4j;
+import org.json.JSONObject;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,6 +21,8 @@ import ru.izotov.entity.AppUser;
 import ru.izotov.enums.Command;
 import ru.izotov.enums.UserStatus;
 import ru.izotov.handler.CommandHandler;
+import ru.izotov.service.CryptoService;
+import ru.izotov.service.RestService;
 import ru.izotov.service.SendMessageService;
 
 import javax.mail.internet.AddressException;
@@ -34,24 +39,26 @@ import static ru.izotov.enums.Command.*;
 @PropertySource("rabbitmq.properties")
 public class TextMessageUpdateConsumer implements UpdateConsumer {
 
-    private final RawDataService rawDataService;
-    private final RabbitTemplate rabbitTemplate;
-    private final RabbitMqConfig rabbitMqConfig;
-    private final AppUserService appUserService;
-    private final SendMessageService sendMessageService;
-    private final AnswerConfiguration answerConfiguration;
+    @Autowired
+    private RawDataService rawDataService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RabbitMqConfig rabbitMqConfig;
+    @Autowired
+    private AppUserService appUserService;
+    @Autowired
+    private SendMessageService sendMessageService;
+    @Autowired
+    private AnswerConfiguration answerConfiguration;
+    @Autowired
+    private CryptoService cryptoService;
+    @Autowired
+    private RestService restService;
     @Autowired
     @Qualifier("getHandlerMap")
     private Map<Command, CommandHandler> commandHandlerMap;
 
-    public TextMessageUpdateConsumer(RawDataService rawDataService, RabbitTemplate rabbitTemplate, RabbitMqConfig rabbitMqConfig, AppUserService appUserService, SendMessageService sendMessageService, AnswerConfiguration answerConfiguration) {
-        this.rawDataService = rawDataService;
-        this.rabbitTemplate = rabbitTemplate;
-        this.rabbitMqConfig = rabbitMqConfig;
-        this.appUserService = appUserService;
-        this.sendMessageService = sendMessageService;
-        this.answerConfiguration = answerConfiguration;
-    }
 
     @Override
     @RabbitListener(queues = "${queue.text.update}")
