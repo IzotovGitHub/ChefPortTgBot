@@ -105,6 +105,17 @@ public class TextMessageUpdateConsumer implements UpdateConsumer {
         appUser.setStatus(UserStatus.AWAITING_CONFIRMATION);
         appUserService.update(appUser);
 
+        String hashOfUserId = cryptoService.hashOf(appUser.getId());
+        JSONObject body = new JSONObject(Map.of(
+                "beneficiary", hashOfUserId,
+                "email", email
+        ));
+
+        ResponseEntity<String> response = restService.sendRequestToMailService("http://127.0.0.1:8087/mail/send", body);
+
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.warn("Error when trying to send email");
+        }
 
         return answerConfiguration.getDefaultAnswer();
     }
