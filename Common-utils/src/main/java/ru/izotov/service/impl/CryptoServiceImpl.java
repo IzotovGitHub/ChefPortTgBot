@@ -2,12 +2,14 @@ package ru.izotov.service.impl;
 
 import org.hashids.Hashids;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import ru.izotov.service.CryptoService;
 
 import javax.annotation.PostConstruct;
 
 @Service
+@PropertySource("crypto.properties")
 public class CryptoServiceImpl implements CryptoService {
 
     @Value("${min.hash.length}")
