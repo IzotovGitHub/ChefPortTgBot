@@ -22,6 +22,7 @@
         <module>Common-jpa</module>
         <module>Common-utils</module>
         <module>Auth-Service</module>
+        <module>Mail-Service</module>
     </modules>
 
     <properties>
