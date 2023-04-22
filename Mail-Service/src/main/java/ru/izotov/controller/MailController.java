@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.izotov.exception.UnexpectedMailException;
 import ru.izotov.srvice.MailService;
 
 @Log4j
@@ -24,11 +25,11 @@ public class MailController {
     public ResponseEntity<?> sendActivationMail(@RequestBody String body) {
         try {
             JsonNode requestBody = new ObjectMapper().readTree(body);
-            mailService.send("chef-port@bot.com", requestBody.get("email").asText(), "Активация учетной записи", "Тут что то важное =)");
+            mailService.send(requestBody.get("emailTo").asText(), requestBody.get("subject").asText(), requestBody.get("body").asText());
             return ResponseEntity.ok().build();
-        } catch (JsonProcessingException e) {
-            log.error("", e);
-            return ResponseEntity.badRequest().build();
+        } catch (JsonProcessingException | UnexpectedMailException e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

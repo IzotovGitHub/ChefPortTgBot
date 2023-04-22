@@ -32,7 +32,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public AppUser create(AppUser appUser) {
         try {
-            return repository.save(appUser);
+            return repository.saveAndFlush(appUser);
         } catch (Exception e) {
             log.error("Unexpected error when trying to create user", e);
             return appUser;
@@ -42,7 +42,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public AppUser update(AppUser user) {
         try {
-            return repository.save(user);
+            return repository.saveAndFlush(user);
         } catch (Exception e) {
             log.error("Unexpected error when trying to create user", e);
             return user;
@@ -63,7 +63,8 @@ public class AppUserServiceImpl implements AppUserService {
     public void updateStatus(AppUser appUser, UserStatus status) {
         try {
             if (appUser.getStatus() != status) {
-                repository.updateStatusById(appUser.getId(), status);
+                appUser.setStatus(status);
+                repository.saveAndFlush(appUser);
             }
         } catch (Exception e) {
             log.error("Unexpected error when trying to update user status", e);

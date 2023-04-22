@@ -33,7 +33,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         AppUser appUser = appUserService.findAppUserByTelegramId(telegramUser.getId())
                 .orElse(appUserService.create(userMapper.toAppUser(telegramUser)));
 
-        if (appUser.getIsActive()) {
+        if (UserStatus.ACTIVE.equals(appUser.getStatus())) {
             return answerConfiguration.getAlreadyActiveAnswer();
         }
 

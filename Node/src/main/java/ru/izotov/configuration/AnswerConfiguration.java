@@ -12,6 +12,8 @@ public class AnswerConfiguration {
 
     @Value("${developing}")
     private String defaultAnswer;
+    @Value("${internal.error}")
+    private String internalError;
     @Value("${node.start}")
     private String startTemplate;
     @Value("${node.text.user.not.auth}")

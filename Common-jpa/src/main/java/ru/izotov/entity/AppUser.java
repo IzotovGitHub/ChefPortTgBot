@@ -28,7 +28,6 @@ public class AppUser {
     private String lastName;
     private String userName;
     private String email;
-    private Boolean isActive;
     private String phoneNumber;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
@@ -38,7 +37,8 @@ public class AppUser {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         AppUser appUser = (AppUser) o;
-        return id != null && Objects.equals(id, appUser.id);
+        return id != null
+                && Objects.equals(id, appUser.id);
     }
 
     @Override
